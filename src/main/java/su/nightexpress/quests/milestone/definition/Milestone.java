@@ -6,11 +6,11 @@ import su.nightexpress.nightcore.config.ConfigValue;
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.util.StringUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
+import su.nightexpress.quests.QuestsAPI;
 import su.nightexpress.quests.QuestsPlaceholders;
 import su.nightexpress.quests.api.IQuest;
 import su.nightexpress.quests.api.exception.QuestLoadException;
 import su.nightexpress.quests.config.Config;
-import su.nightexpress.quests.registry.Registries;
 import su.nightexpress.quests.task.TaskType;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class Milestone implements IQuest {
         String path = "";
 
         String typeName = ConfigValue.create(path + ".Type", "null").read(config);
-        this.type = Registries.TASK_TYPE.byKey(typeName);
+        this.type = QuestsAPI.plugin().getTaskTypeRegistry().getTypeById(typeName);
         if (this.type == null) {
             throw new QuestLoadException("Invalid milestone type '" + typeName + "'!");
         }

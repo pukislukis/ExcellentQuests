@@ -174,6 +174,7 @@ public class BattlePassManager extends AbstractManager<QuestsPlugin> {
 
         this.setSeason(newSeason); // Set as current season, as there should be no more than 1 active/scheduled season.
         this.loadSeason(newSeason); // Load it to the map.
+        this.checkPremiums();
 
         Lang.BATTLE_PASS_SEASON_LAUNCHED.message().broadcast(replacer -> replacer.replace(newSeason.replacePlaceholders()));
     }

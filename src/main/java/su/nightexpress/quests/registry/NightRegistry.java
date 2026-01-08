@@ -6,6 +6,7 @@ import su.nightexpress.nightcore.util.LowerCase;
 
 import java.util.*;
 
+@Deprecated
 public class NightRegistry<T> {
 
     private final Map<String, T> byKey;

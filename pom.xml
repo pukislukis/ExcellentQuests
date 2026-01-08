@@ -6,7 +6,7 @@
 
     <groupId>su.nightexpress.quests</groupId>
     <artifactId>ExcellentQuests</artifactId>
-    <version>4.0.5-beta</version>
+    <version>4.0.6</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -61,6 +61,11 @@
             <id>xiaomomi's plugins-releases</id>
             <url>https://repo.momirealms.net/releases</url>
         </repository>
+
+        <repository>
+            <id>evenmorefish</id>
+            <url>https://repo.codemc.io/repository/EvenMoreFish</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -85,9 +90,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.oheers.fish</groupId>
-            <artifactId>EvenMoreFish</artifactId>
-            <version>2.0.0-SNAPSHOT</version>
+            <groupId>com.oheers.evenmorefish</groupId>
+            <artifactId>even-more-fish-api</artifactId>
+            <version>2.1.5</version>
             <scope>provided</scope>
         </dependency>
 

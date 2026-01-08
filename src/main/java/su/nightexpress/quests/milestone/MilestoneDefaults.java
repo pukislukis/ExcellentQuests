@@ -7,13 +7,14 @@ import su.nightexpress.nightcore.util.BukkitThing;
 import su.nightexpress.nightcore.util.LangUtil;
 import su.nightexpress.nightcore.util.Lists;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
+import su.nightexpress.quests.QuestsAPI;
 import su.nightexpress.quests.milestone.definition.Milestone;
 import su.nightexpress.quests.milestone.definition.MilestoneCategory;
 import su.nightexpress.quests.milestone.definition.MilestoneObjectiveTable;
-import su.nightexpress.quests.registry.Registries;
 import su.nightexpress.quests.reward.RewardDefaults;
 import su.nightexpress.quests.task.TaskType;
 import su.nightexpress.quests.task.TaskTypeId;
+import su.nightexpress.quests.task.TaskTypeRegistry;
 import su.nightexpress.quests.task.adapter.Adapter;
 
 import java.util.*;
@@ -131,7 +132,7 @@ public class MilestoneDefaults {
     }
 
     private static void createMilestone(@NotNull MilestoneManager manager, @NotNull String id, @NotNull String type, @NotNull String category, @NotNull Consumer<Milestone> consumer) {
-        TaskType<?, ?> taskType = Registries.TASK_TYPE.byKey(type);
+        TaskType<?, ?> taskType = QuestsAPI.plugin().getTaskTypeRegistry().getTypeById(type);
         if (taskType == null) return;
 
         manager.createMilestone(id, milestone -> {

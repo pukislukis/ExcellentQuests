@@ -64,7 +64,7 @@ public class MilestonesMenu extends LinkedMenu<QuestsPlugin, MilestoneCategory> 
             .setItems(this.manager.getMilestonesByCategory(category).stream().sorted(Comparator.comparing(Milestone::getName)).toList())
             .setItemCreator(milestone -> {
                 MilestoneData data = user.getMilestoneData(milestone);
-                int level = data.getFirstIncompletedLevel(milestone);
+                int level = data.isLevelCompleted(milestone.getLevels()) ? milestone.getLevels() : data.getFirstIncompletedLevel(milestone);
                 int units = data.countTotalProgress(milestone);
                 double progress = data.getTotalProgressValue(milestone);
                 List<Reward> rewards = this.plugin.getRewardManager().getMilestoneRewards(milestone);
@@ -75,7 +75,7 @@ public class MilestonesMenu extends LinkedMenu<QuestsPlugin, MilestoneCategory> 
                     .replacement(replacer -> replacer
                         .replace(GENERIC_PROGRESS_BAR, MenuUtils.buildProgressBar(progress))
                         .replace(GENERIC_PROGRESS, NumberUtil.format(progress * 100D))
-                        .replace(GENERIC_LEVEL, () -> String.valueOf(data.getFirstIncompletedLevel(milestone)))
+                        .replace(GENERIC_LEVEL, () -> String.valueOf(level))
                         .replace(GENERIC_OBJECTIVES, MenuUtils.formatObjectives(milestone, data, level))
                         .replace(GENERIC_REWARDS, MenuUtils.formatRewards(rewards, units, level, 1D))
                         .replace(milestone.replacePlaceholders())

@@ -16,6 +16,7 @@ import su.nightexpress.quests.reward.RewardManager;
 import su.nightexpress.quests.task.TaskManager;
 import su.nightexpress.quests.quest.QuestManager;
 import su.nightexpress.quests.registry.Registries;
+import su.nightexpress.quests.task.TaskTypeRegistry;
 import su.nightexpress.quests.user.UserManager;
 
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class QuestsPlugin extends NightPlugin {
 
     private DataHandler       dataHandler;
     private UserManager       userManager;
+    private TaskTypeRegistry taskTypeRegistry;
     private TaskManager       taskManager;
     private RewardManager     rewardManager;
     private BattlePassManager battlePassManager;
@@ -52,6 +54,8 @@ public class QuestsPlugin extends NightPlugin {
     protected void onStartup() {
         super.onStartup();
         QuestsAPI.load(this);
+
+        this.taskTypeRegistry = new TaskTypeRegistry();
     }
 
     @Override
@@ -64,7 +68,7 @@ public class QuestsPlugin extends NightPlugin {
         this.userManager = new UserManager(this, this.dataHandler);
         this.userManager.setup();
 
-        this.taskManager = new TaskManager(this);
+        this.taskManager = new TaskManager(this, this.taskTypeRegistry);
         this.taskManager.setup();
 
         this.rewardManager = new RewardManager(this);
@@ -99,6 +103,7 @@ public class QuestsPlugin extends NightPlugin {
         if (this.dataHandler != null) this.dataHandler.shutdown();
 
         Registries.shutdown();
+        this.taskTypeRegistry.clear();
     }
 
     @Override
@@ -120,6 +125,11 @@ public class QuestsPlugin extends NightPlugin {
     @NotNull
     public UserManager getUserManager() {
         return this.userManager;
+    }
+
+    @NotNull
+    public TaskTypeRegistry getTaskTypeRegistry() {
+        return this.taskTypeRegistry;
     }
 
     @NotNull

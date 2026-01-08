@@ -28,6 +28,7 @@ import su.nightexpress.quests.user.QuestUser;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -155,6 +156,8 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
         QuestUser user = this.plugin.getUserManager().getOrFetch(player);
 
         // TODO Get milestones by mission type
+        AtomicBoolean progressed = new AtomicBoolean(false);
+
         this.getMilestones().forEach(milestone -> {
             if (milestone.getType() != taskType) return;
             if (user.isCompleted(milestone)) return;
@@ -168,11 +171,12 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
             if (required <= 0) return;
 
             int progress = data.getObjectiveProgress(fullName);
-            if (progress >= required) return;
+            if (progress >= required && level >= milestone.getLevels()) return;
 
             int total = Math.min(required, progress + amount);
 
             data.setObjectiveProgress(fullName, total);
+            progressed.set(true);
 
             if (data.isReady(milestone, level)) {
                 data.addCompletedLevel(level);
@@ -189,6 +193,10 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
                 );
             }
         });
+
+        if (progressed.get()) {
+            this.plugin.getUserManager().save(user);
+        }
     }
 
     @NotNull

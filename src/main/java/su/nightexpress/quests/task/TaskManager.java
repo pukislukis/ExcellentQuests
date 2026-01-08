@@ -20,7 +20,6 @@ import su.nightexpress.quests.QuestsPlugin;
 import su.nightexpress.quests.config.Config;
 import su.nightexpress.quests.task.adapter.Adapter;
 import su.nightexpress.quests.task.adapter.AdapterFamily;
-import su.nightexpress.quests.registry.Registries;
 import su.nightexpress.quests.task.listener.TaskGlobalListener;
 import su.nightexpress.quests.task.listener.type.*;
 import su.nightexpress.quests.task.workstation.WorkstationMode;
@@ -37,14 +36,17 @@ public class TaskManager extends AbstractManager<QuestsPlugin> {
     private static final Predicate<Block> BLOCK_FILTER = block -> true;
     private static final String PLAYER_BLOCK_MARKER = "player_block_marker";
 
+    private final TaskTypeRegistry taskTypeRegistry;
+
     private final Set<SpawnReason> artificalMobSpawns;
 
     private final NamespacedKey stationOwnerKey;
     private final NamespacedKey stationModeKey;
     private final NamespacedKey mobSpawnerKey;
 
-    public TaskManager(@NotNull QuestsPlugin plugin) {
+    public TaskManager(@NotNull QuestsPlugin plugin, @NotNull TaskTypeRegistry taskTypeRegistry) {
         super(plugin);
+        this.taskTypeRegistry = taskTypeRegistry;
         this.artificalMobSpawns = new HashSet<>();
         this.stationOwnerKey = new NamespacedKey(plugin, "workstation.owner_id");
         this.stationModeKey = new NamespacedKey(plugin, "workstation.craft_mode");
@@ -73,23 +75,23 @@ public class TaskManager extends AbstractManager<QuestsPlugin> {
     }
 
     private void registerTaskTypes() {
-        Registries.registerTaskType(TaskTypeId.PLACE_BLOCK, AdapterFamily.BLOCK, taskType -> this.addListener(new BlockPlaceTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.BREAK_BLOCK, AdapterFamily.BLOCK, type -> this.addListener(new BlockBreakTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.BREED_MOB, AdapterFamily.ENTITY, taskType -> this.addListener(new BreedingTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.BREWING, AdapterFamily.ITEM, taskType -> this.addListener(new BrewingTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.COOK_ITEM, AdapterFamily.ITEM, taskType -> this.addListener(new CookingTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.CRAFT_ITEM, AdapterFamily.ITEM, taskType -> this.addListener(new CraftingTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.ENCHANTING, AdapterFamily.ENCHANTMENT, taskType -> this.addListener(new EnchantingTaskListener(this.plugin, this, taskType)));
-        Registries.registerTaskType(TaskTypeId.FERTILIZING, AdapterFamily.BLOCK_STATE, type -> this.addListener(new FertilizingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.FISH_ITEM, AdapterFamily.ITEM, type -> this.addListener(new FishingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.FORGE_ITEM, AdapterFamily.ITEM, type -> this.addListener(new ForgingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.BLOCK_LOOT, AdapterFamily.ITEM, type -> this.addListener(new BlockDropTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.MOB_LOOT, AdapterFamily.ITEM, type -> this.addListener(new MobDropTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.GRINDSTONE_ITEM, AdapterFamily.ITEM, type -> this.addListener(new GrindstoneTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.KILL_MOB, AdapterFamily.ENTITY, type -> this.addListener(new KillingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.MILK_MOB, AdapterFamily.ENTITY, type -> this.addListener(new MilkingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.SHEAR_MOB, AdapterFamily.ENTITY, type -> this.addListener(new ShearingTaskListener(this.plugin, this, type)));
-        Registries.registerTaskType(TaskTypeId.TAME_MOB, AdapterFamily.ENTITY, type -> this.addListener(new TamingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.PLACE_BLOCK, AdapterFamily.BLOCK, taskType -> this.addListener(new BlockPlaceTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.BREAK_BLOCK, AdapterFamily.BLOCK, type -> this.addListener(new BlockBreakTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.BREED_MOB, AdapterFamily.ENTITY, taskType -> this.addListener(new BreedingTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.BREWING, AdapterFamily.ITEM, taskType -> this.addListener(new BrewingTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.COOK_ITEM, AdapterFamily.ITEM, taskType -> this.addListener(new CookingTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.CRAFT_ITEM, AdapterFamily.ITEM, taskType -> this.addListener(new CraftingTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.ENCHANTING, AdapterFamily.ENCHANTMENT, taskType -> this.addListener(new EnchantingTaskListener(this.plugin, this, taskType)));
+        this.taskTypeRegistry.registerType(TaskTypeId.FERTILIZING, AdapterFamily.BLOCK_STATE, type -> this.addListener(new FertilizingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.FISH_ITEM, AdapterFamily.ITEM, type -> this.addListener(new FishingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.FORGE_ITEM, AdapterFamily.ITEM, type -> this.addListener(new ForgingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.BLOCK_LOOT, AdapterFamily.ITEM, type -> this.addListener(new BlockDropTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.MOB_LOOT, AdapterFamily.ITEM, type -> this.addListener(new MobDropTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.GRINDSTONE_ITEM, AdapterFamily.ITEM, type -> this.addListener(new GrindstoneTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.KILL_MOB, AdapterFamily.ENTITY, type -> this.addListener(new KillingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.MILK_MOB, AdapterFamily.ENTITY, type -> this.addListener(new MilkingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.SHEAR_MOB, AdapterFamily.ENTITY, type -> this.addListener(new ShearingTaskListener(this.plugin, this, type)));
+        this.taskTypeRegistry.registerType(TaskTypeId.TAME_MOB, AdapterFamily.ENTITY, type -> this.addListener(new TamingTaskListener(this.plugin, this, type)));
     }
 
     public boolean canDoTasks(@NotNull Player player) {

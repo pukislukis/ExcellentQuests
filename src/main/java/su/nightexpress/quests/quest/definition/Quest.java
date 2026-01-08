@@ -5,17 +5,16 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nightexpress.nightcore.config.ConfigValue;
 import su.nightexpress.nightcore.config.FileConfig;
-import su.nightexpress.nightcore.util.LowerCase;
 import su.nightexpress.nightcore.util.StringUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.random.Rnd;
 import su.nightexpress.nightcore.util.wrapper.UniInt;
+import su.nightexpress.quests.QuestsAPI;
 import su.nightexpress.quests.QuestsPlaceholders;
 import su.nightexpress.quests.api.IQuest;
 import su.nightexpress.quests.api.exception.QuestLoadException;
 import su.nightexpress.quests.quest.data.QuestCounter;
 import su.nightexpress.quests.quest.data.QuestData;
-import su.nightexpress.quests.registry.Registries;
 import su.nightexpress.quests.task.TaskType;
 
 import java.io.File;
@@ -51,7 +50,7 @@ public class Quest implements IQuest {
         String path = "";
 
         String typeName = ConfigValue.create(path + ".Type", "null").read(config);
-        this.type = Registries.TASK_TYPE.byKey(typeName);
+        this.type = QuestsAPI.plugin().getTaskTypeRegistry().getTypeById(typeName);
         if (this.type == null) {
             throw new QuestLoadException("Invalid quest type '" + typeName + "'!");
         }
@@ -121,7 +120,7 @@ public class Quest implements IQuest {
 
             double unitWorth = objective.unitWorth();
 
-            objectives.put(LowerCase.INTERNAL.apply(fullName), QuestCounter.create(amount, unitWorth));
+            objectives.put(/*LowerCase.INTERNAL.apply(*/fullName, QuestCounter.create(amount, unitWorth));
             objectivesAmount--;
             unitsWorth += (amount * unitWorth);
         }

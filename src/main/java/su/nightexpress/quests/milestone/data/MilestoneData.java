@@ -51,7 +51,9 @@ public class MilestoneData {
     }
 
     public double getTotalProgressValue(@NotNull Milestone milestone) {
-        return (double) this.countTotalProgress(milestone) / (double) milestone.countTotalRequirements();
+        if (this.isCompleted(milestone)) return 1D; // Always return 1.0 if milestone level is set as completed, regardless of the objectives count.
+
+        return Math.clamp((double) this.countTotalProgress(milestone) / (double) milestone.countTotalRequirements(), 0D, 1D);
     }
 
     public int countTotalProgress(@NotNull Milestone milestone) {
@@ -77,6 +79,10 @@ public class MilestoneData {
             }
         }
         return -1;
+    }
+
+    public boolean isCompleted(@NotNull Milestone milestone) {
+        return this.countCompletedLevels() >= milestone.getLevels();
     }
 
     public boolean isLevelCompleted(int level) {

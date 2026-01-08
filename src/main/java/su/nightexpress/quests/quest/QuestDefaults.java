@@ -9,7 +9,6 @@ import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.wrapper.UniInt;
 import su.nightexpress.quests.quest.definition.Quest;
 import su.nightexpress.quests.quest.definition.QuestObjectiveTable;
-import su.nightexpress.quests.registry.Registries;
 import su.nightexpress.quests.reward.RewardDefaults;
 import su.nightexpress.quests.task.TaskType;
 import su.nightexpress.quests.task.TaskTypeId;
@@ -18,7 +17,8 @@ import su.nightexpress.quests.task.adapter.Adapter;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.DARK_GRAY;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
 
 public class QuestDefaults {
 
@@ -391,7 +391,7 @@ public class QuestDefaults {
                                     @NotNull List<String> desc,
                                     @NotNull Material iconType,
                                     @NotNull Consumer<Quest> consumer) {
-        TaskType<?, ?> taskType = Registries.TASK_TYPE.byKey(type);
+        TaskType<?, ?> taskType = manager.plugin().getTaskTypeRegistry().getTypeById(type);
         if (taskType == null) return;
 
         manager.createQuest(Strings.filterForVariable(name), quest -> {

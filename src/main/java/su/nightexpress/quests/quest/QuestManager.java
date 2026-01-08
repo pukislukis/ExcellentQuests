@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -165,7 +166,7 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
             Quest quest = quests.remove(Rnd.nextInt(quests.size()));
 
             QuestData questData = quest.createQuestData();
-            if (questData == null) return;
+            if (questData == null) break;
 
             if (!acceptionRequired) {
                 questData.setActive(true);
@@ -196,6 +197,7 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
         if (!this.isQuestsAvailable()) return;
 
         QuestUser user = this.plugin.getUserManager().getOrFetch(player);
+        AtomicBoolean progressed = new AtomicBoolean(false);
 
         for (QuestData questData : user.getQuestDatas()) {
             if (!questData.isActive()) continue;
@@ -213,6 +215,7 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
             int count = Math.min(required, amount);
 
             questData.addCompleted(fullName, count);
+            progressed.set(true);
 
             if (questData.isCompleted()) {
                 List<Reward> rewards = this.plugin.getRewardManager().getQuestRewards(quest);
@@ -231,6 +234,10 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
 
                 this.plugin.battlePassManager().ifPresent(bp -> bp.addXP(player, xpReward));
             }
+        }
+
+        if (progressed.get()) {
+            this.plugin.getUserManager().save(user);
         }
     }
     

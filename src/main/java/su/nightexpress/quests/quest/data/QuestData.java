@@ -2,7 +2,6 @@ package su.nightexpress.quests.quest.data;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import su.nightexpress.nightcore.util.LowerCase;
 import su.nightexpress.nightcore.util.TimeUtil;
 
 import java.util.Map;
@@ -91,7 +90,7 @@ public class QuestData {
 
     @Nullable
     public QuestCounter getObjectiveCounter(@NotNull String fullName) {
-        return this.objectiveCounter.get(LowerCase.INTERNAL.apply(fullName));
+        return this.objectiveCounter.get(/*LowerCase.INTERNAL.apply(*/fullName);
     }
 
     @NotNull

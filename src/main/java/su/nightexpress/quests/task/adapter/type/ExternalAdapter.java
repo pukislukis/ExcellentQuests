@@ -1,5 +1,6 @@
 package su.nightexpress.quests.task.adapter.type;
 
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nightexpress.nightcore.bridge.common.NightKey;
@@ -25,22 +26,29 @@ public abstract class ExternalAdapter<I, O> extends AbstractAdapter<I, O> {
 
     @Override
     public boolean canHandle(@NotNull String fullName) {
-        return NightKey.key(fullName).namespace().equalsIgnoreCase(this.namespace);
+        return LowerCase.INTERNAL.apply(fullName).startsWith(this.namespace);
+
+        //return NightKey.key(fullName).namespace().equalsIgnoreCase(this.namespace);
     }
 
     @Override
     @Nullable
     public String getLocalizedName(@NotNull String fullName) {
-        NightKey key = NightKey.key(fullName);
-        if (!this.isNamespace(key.namespace())) return null;
+        int index = fullName.indexOf(NightKey.DELIMITER);
+        String namespace = index >= 1 ? fullName.substring(0, index) : NamespacedKey.MINECRAFT;
+        String value = index >= 0 ? fullName.substring(index + 1) : fullName;
 
-        I type = this.getTypeByName(key.value());
+        if (!this.isNamespace(namespace)) return null;
+
+        I type = this.getTypeByName(value);
         return type == null ? null : this.getLocalizedName(type);
     }
 
     @NotNull
     public String toFullNameOfType(@NotNull I type) {
-        String typeName = LowerCase.INTERNAL.apply(this.getTypeName(type));
-        return NightKey.key(this.namespace, typeName).asString();
+        String typeName = /*LowerCase.INTERNAL.apply(*/this.getTypeName(type);
+        return this.namespace + NightKey.DELIMITER + typeName;
+
+        //return NightKey.key(this.namespace, typeName).asString();
     }
 }

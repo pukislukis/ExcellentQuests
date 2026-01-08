@@ -70,15 +70,6 @@ public class MenuUtils {
             list.add(formatObjective(type, fullName, current, required));
         });
 
-        /*quest.getObjectiveTable().getEntryMap().entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
-            String fullName = entry.getKey();
-
-            int required = data.getRequired(fullName);
-            int current = data.getCurrent(fullName);
-
-            list.add(formatObjective(type, fullName, current, required));
-        });*/
-
         return list;
     }
 
