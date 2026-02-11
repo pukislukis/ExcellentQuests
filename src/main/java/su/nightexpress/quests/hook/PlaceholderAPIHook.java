@@ -38,13 +38,13 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
     @Override
     @NotNull
     public String getAuthor() {
-        return plugin.getDescription().getAuthors().toString();
+        return "NightExpress";
     }
 
     @Override
     @NotNull
     public String getVersion() {
-        return plugin.getDescription().getVersion();
+        return "1.0.0";
     }
 
     @Override
@@ -59,7 +59,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             return "";
         }
 
-        QuestUser user = plugin.getUserManager().getUserData(player);
+        QuestUser user = plugin.getUserManager().getOrFetch(player);
         if (user == null) {
             return "";
         }
@@ -94,7 +94,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             return "";
         }
 
-        BattlePassSeason season = manager.getCurrentSeason();
+        BattlePassSeason season = manager.getSeason();
         if (season == null) {
             return "";
         }
@@ -135,7 +135,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             return "";
         }
 
-        BattlePassSeason season = manager.getCurrentSeason();
+        BattlePassSeason season = manager.getSeason();
         if (season == null) {
             return "";
         }
@@ -224,7 +224,7 @@ public class PlaceholderAPIHook extends PlaceholderExpansion {
             case "level":
             case "levels":
                 MilestoneData data = user.getMilestoneData(milestone);
-                return data != null ? String.valueOf(data.getLevel()) : "0";
+                return data != null ? String.valueOf(data.countCompletedLevels()) : "0";
             case "completed":
                 return String.valueOf(user.isCompleted(milestone));
             default:
