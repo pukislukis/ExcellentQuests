@@ -199,7 +199,7 @@ public class BattlePassCommands {
             return false;
         }
 
-        boolean isPremium = arguments.getBool(ARG_STATUS);
+        boolean isPremium = arguments.get(ARG_STATUS, Boolean.class);
         String playerName = arguments.getString(ARG_PLAYER, context.getSender().getName());
 
         plugin.getUserManager().manageUser(playerName, user -> {
