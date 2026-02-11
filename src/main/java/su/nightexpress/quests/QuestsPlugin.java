@@ -11,6 +11,8 @@ import su.nightexpress.quests.config.Config;
 import su.nightexpress.quests.config.Lang;
 import su.nightexpress.quests.config.Perms;
 import su.nightexpress.quests.data.DataHandler;
+import su.nightexpress.quests.hook.HookPlugin;
+import su.nightexpress.quests.hook.PlaceholderAPIHook;
 import su.nightexpress.quests.milestone.MilestoneManager;
 import su.nightexpress.quests.reward.RewardManager;
 import su.nightexpress.quests.task.TaskManager;
@@ -31,6 +33,7 @@ public class QuestsPlugin extends NightPlugin {
     private BattlePassManager battlePassManager;
     private MilestoneManager  milestoneManager;
     private QuestManager      questManager;
+    private PlaceholderAPIHook placeholderAPIHook;
 
     @Override
     @NotNull
@@ -90,10 +93,14 @@ public class QuestsPlugin extends NightPlugin {
         }
 
         this.loadCommands();
+        this.registerPlaceholderAPI();
     }
 
     @Override
     public void disable() {
+        if (this.placeholderAPIHook != null) {
+            this.placeholderAPIHook.unregister();
+        }
         if (this.taskManager != null) this.taskManager.shutdown();
         if (this.milestoneManager != null) this.milestoneManager.shutdown();
         if (this.questManager != null) this.questManager.shutdown();
@@ -115,6 +122,17 @@ public class QuestsPlugin extends NightPlugin {
 
     private void loadCommands() {
         this.rootCommand = NightCommand.forPlugin(this, builder -> BaseCommands.load(this, builder));
+    }
+
+    private void registerPlaceholderAPI() {
+        if (this.getServer().getPluginManager().getPlugin(HookPlugin.PLACEHOLDER_API) == null) {
+            return;
+        }
+
+        this.placeholderAPIHook = new PlaceholderAPIHook(this);
+        if (this.placeholderAPIHook.register()) {
+            this.info("Registered PlaceholderAPI expansion.");
+        }
     }
 
     @NotNull
