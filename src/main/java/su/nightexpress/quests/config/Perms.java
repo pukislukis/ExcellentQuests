@@ -35,6 +35,7 @@ public class Perms {
     public static final UniPermission COMMAND_BATTLE_PASS_ADD_XP        = new UniPermission(PREFIX_COMMAND + "battlepass.addxp");
     public static final UniPermission COMMAND_BATTLE_PASS_REMOVE_XP     = new UniPermission(PREFIX_COMMAND + "battlepass.removexp");
     public static final UniPermission COMMAND_BATTLE_PASS_SET_XP        = new UniPermission(PREFIX_COMMAND + "battlepass.setxp");
+    public static final UniPermission COMMAND_BATTLE_PASS_SET_PREMIUM   = new UniPermission(PREFIX_COMMAND + "battlepass.setpremium");
     
     static {
         PLUGIN.addChildren(
@@ -62,7 +63,8 @@ public class Perms {
             COMMAND_BATTLE_PASS_SET_LEVEL,
             COMMAND_BATTLE_PASS_ADD_XP,
             COMMAND_BATTLE_PASS_REMOVE_XP,
-            COMMAND_BATTLE_PASS_SET_XP
+            COMMAND_BATTLE_PASS_SET_XP,
+            COMMAND_BATTLE_PASS_SET_PREMIUM
         );
     }
 }

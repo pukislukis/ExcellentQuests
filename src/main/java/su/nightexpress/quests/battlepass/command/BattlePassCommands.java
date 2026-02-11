@@ -29,7 +29,8 @@ public class BattlePassCommands {
     private static final String ARG_PLAYER   = "player";
     private static final String ARG_NAME     = "name";
     private static final String ARG_DURATION = "duration";
-    private static final String ARG_AMOUNT = "amount";
+    private static final String ARG_AMOUNT   = "amount";
+    private static final String ARG_STATUS   = "status";
 
     private static QuestsPlugin      plugin;
     private static BattlePassManager manager;
@@ -111,6 +112,15 @@ public class BattlePassCommands {
                 )
                 .executes(BattlePassCommands::setXP)
             )
+            .branch(Commands.literal("setpremium")
+                .description(Lang.COMMAND_BATTLE_PASS_SET_PREMIUM_DESC)
+                .permission(Perms.COMMAND_BATTLE_PASS_SET_PREMIUM)
+                .withArguments(
+                    Arguments.bool(ARG_STATUS).suggestions((reader, context) -> Lists.newList("true", "false")),
+                    Arguments.playerName(ARG_PLAYER).optional()
+                )
+                .executes(BattlePassCommands::setPremium)
+            )
             .executes(BattlePassCommands::openBattlePass)
         );
         command.register();
@@ -175,6 +185,39 @@ public class BattlePassCommands {
 
     public static boolean setXP(@NotNull CommandContext context, @NotNull ParsedArguments arguments) {
         return peroformProgressionOperation(context, arguments, manager::handleXPSet, Lang.BATTLE_PASS_XP_SET);
+    }
+
+    public static boolean setPremium(@NotNull CommandContext context, @NotNull ParsedArguments arguments) {
+        if (!arguments.contains(ARG_PLAYER) && !context.isPlayer()) {
+            context.printUsage();
+            return false;
+        }
+
+        BattlePassSeason season = manager.getSeason();
+        if (season == null || (!season.isRunning() && !season.isScheduled())) {
+            context.send(Lang.BATTLE_PASS_NO_ACTIVE_SEASON);
+            return false;
+        }
+
+        boolean isPremium = arguments.getBool(ARG_STATUS);
+        String playerName = arguments.getString(ARG_PLAYER, context.getSender().getName());
+
+        plugin.getUserManager().manageUser(playerName, user -> {
+            if (user == null) {
+                context.errorBadPlayer();
+                return;
+            }
+            
+            BattlePassData data = user.getBattlePassData(season);
+            data.setPremium(isPremium);
+            
+            context.send(Lang.BATTLE_PASS_PREMIUM_SET, replacer -> replacer
+                .replace(QuestsPlaceholders.PLAYER_NAME, user.getName())
+                .replace(data.replacePlaceholders())
+            );
+            plugin.getUserManager().save(user);
+        });
+        return true;
     }
 
     private static boolean peroformProgressionOperation(@NotNull CommandContext context,
