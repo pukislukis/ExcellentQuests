@@ -6,4 +6,5 @@ public class HookPlugin {
     public static final String EVEN_MORE_FISH = "EvenMoreFish";
     public static final String CUSTOM_CROPS = "CustomCrops";
     public static final String CUSTOM_FISHING = "CustomFishing";
+    public static final String PLACEHOLDER_API = "PlaceholderAPI";
 }

@@ -33,6 +33,7 @@ public class Lang implements LangContainer {
     public static final TextLocale COMMAND_BATTLE_PASS_ADD_XP_DESC        = LangEntry.builder("Command.BattlePass.AddXP.Desc").text("Add BattlePass XP.");
     public static final TextLocale COMMAND_BATTLE_PASS_REMOVE_XP_DESC     = LangEntry.builder("Command.BattlePass.RemoveXP.Desc").text("Remove BattlePass XP.");
     public static final TextLocale COMMAND_BATTLE_PASS_SET_XP_DESC        = LangEntry.builder("Command.BattlePass.SetXP.Desc").text("Set BattlePass XP.");
+    public static final TextLocale COMMAND_BATTLE_PASS_SET_PREMIUM_DESC   = LangEntry.builder("Command.BattlePass.SetPremium.Desc").text("Set BattlePass premium status.");
     
     public static final TextLocale COMMAND_QUESTS_NAME         = LangEntry.builder("Command.Quests.Name").text("Quests");
     public static final TextLocale COMMAND_QUESTS_DESC         = LangEntry.builder("Command.Quests.Desc").text("View daily quests.");
@@ -116,6 +117,10 @@ public class Lang implements LangContainer {
 
     public static final MessageLocale BATTLE_PASS_XP_SET = LangEntry.builder("BattlePass.XP.Set").chatMessage(
         GRAY.wrap("Set " + SOFT_YELLOW.wrap(GENERIC_AMOUNT) + " XP for " + SOFT_YELLOW.wrap(PLAYER_NAME) + "'s Battle Pass.")
+    );
+
+    public static final MessageLocale BATTLE_PASS_PREMIUM_SET = LangEntry.builder("BattlePass.Premium.Set").chatMessage(
+        GRAY.wrap("Set " + SOFT_YELLOW.wrap(PLAYER_NAME) + "'s Battle Pass to " + SOFT_YELLOW.wrap(BATTLE_PASS_TYPE) + " status.")
     );
 
     public static final MessageLocale BATTLE_PASS_LEVEL_UP = LangEntry.builder("BattlePass.Level.Up").titleMessage(
