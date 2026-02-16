@@ -23,6 +23,13 @@ public class Config {
         "Sets date time format."
     ).whenRead(QuestUtils::setDateTimeFormatter);
 
+    public static final ConfigValue<Boolean> GENERAL_DEBUG_BLOCK_LOOT = ConfigValue.create("General.Debug.BlockLoot",
+        false,
+        "Enables debug logging for the block_loot task type.",
+        "Set to true to see detailed logs about block breaking, item drops, and pickups.",
+        "Useful for troubleshooting milestone/quest progression issues."
+    );
+
     public static final ConfigValue<Boolean> FEATURES_BATTLE_PASS_ENABLED = ConfigValue.create("Features.BattlePass.Enabled",
         true,
         "Enables the Battle Pass feature."
