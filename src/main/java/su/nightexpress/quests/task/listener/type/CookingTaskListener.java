@@ -37,6 +37,8 @@ public class CookingTaskListener extends TaskListener<ItemStack, AdapterFamily<I
         if (!this.manager.canDoTasks(player)) return;
 
         ItemStack ingredient = event.getSource();
+        if (ingredient == null || ingredient.getType().isAir() || ingredient.getAmount() <= 0) return;
+        
         WorkstationMode mode = this.manager.getWorkstationMode(tile);
         if (mode == WorkstationMode.AUTO && !Config.ANTI_ABUSE_COUNT_AUTO_COOKING.get()) return;
 
