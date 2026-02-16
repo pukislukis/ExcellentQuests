@@ -111,7 +111,16 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             // Check both hands to find the tool used (prefer main hand if both have items)
             ItemStack mainHand = player.getInventory().getItemInMainHand();
             ItemStack offHand = player.getInventory().getItemInOffHand();
-            ItemStack tool = (mainHand != null && !mainHand.getType().isAir()) ? mainHand : offHand;
+            
+            // Select the tool to use for drop calculation (default to air if both hands are empty)
+            ItemStack tool;
+            if (mainHand != null && !mainHand.getType().isAir()) {
+                tool = mainHand;
+            } else if (offHand != null && !offHand.getType().isAir()) {
+                tool = offHand;
+            } else {
+                tool = new ItemStack(Material.AIR);
+            }
             
             // Use the original block state (before breaking) to get accurate drops
             // This method accounts for fortune, silk touch, and other enchantments
