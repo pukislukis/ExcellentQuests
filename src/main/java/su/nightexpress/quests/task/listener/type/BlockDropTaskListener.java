@@ -42,19 +42,27 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
     public void onTaskBlockHarvest(PlayerHarvestBlockEvent event) {
         Player player = event.getPlayer();
         if (!this.manager.canDoTasks(player)) {
-            this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent: Player " + player.getName() + " cannot do tasks");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent: Player " + player.getName() + " cannot do tasks");
+            }
             return;
         }
 
-        this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent triggered for player " + player.getName() + ", items harvested: " + event.getItemsHarvested().size());
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent triggered for player " + player.getName() + ", items harvested: " + event.getItemsHarvested().size());
+        }
         
         event.getItemsHarvested().forEach(itemStack -> {
             if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-                this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                }
                 return;
             }
             
-            this.plugin.info("[BlockLoot Debug] Processing harvested item: " + itemStack.getType() + " x" + itemStack.getAmount());
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] Processing harvested item: " + itemStack.getType() + " x" + itemStack.getAmount());
+            }
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
     }
@@ -63,21 +71,29 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
     public void onTaskBlockDrop(BlockDropItemEvent event) {
         Player player = event.getPlayer();
         if (!this.manager.canDoTasks(player)) {
-            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Player " + player.getName() + " cannot do tasks");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Player " + player.getName() + " cannot do tasks");
+            }
             return;
         }
         if (event.getBlockState() instanceof Container) {
-            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Skipping container block");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Skipping container block");
+            }
             return; // Do not handle container's drops.
         }
 
         Block block = event.getBlock();
         // Skip anti-abuse check for Ageable blocks (crops, etc.) since they are meant to be planted and harvested by players
         boolean isAgeable = block.getBlockData() instanceof Ageable;
-        this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + block.getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + block.getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
+        }
         
         if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) {
-            this.plugin.info("[BlockLoot Debug] Skipping player-placed block (anti-abuse enabled)");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] Skipping player-placed block (anti-abuse enabled)");
+            }
             return;
         }
 
@@ -86,7 +102,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
             if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-                this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                }
                 return;
             }
             
@@ -95,7 +113,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             // Store the item type as well for tracking
             item.getPersistentDataContainer().set(this.blockLootItemKey, PersistentDataType.STRING, itemStack.getType().name());
             
-            this.plugin.info("[BlockLoot Debug] Marked dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] Marked dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+            }
         });
     }
 
@@ -103,7 +123,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
     public void onTaskItemPickup(EntityPickupItemEvent event) {
         if (!(event.getEntity() instanceof Player player)) return;
         if (!this.manager.canDoTasks(player)) {
-            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " cannot do tasks");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " cannot do tasks");
+            }
             return;
         }
 
@@ -118,17 +140,23 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         
         // Check if the player picking up is the one who broke the block
         if (!player.getUniqueId().toString().equals(markedPlayerUUID)) {
-            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up item but didn't break the block");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up item but didn't break the block");
+            }
             return;
         }
         
         ItemStack itemStack = itemEntity.getItemStack();
         if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Invalid item stack");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Invalid item stack");
+            }
             return;
         }
         
-        this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up block loot: " + itemStack.getType() + " x" + itemStack.getAmount());
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up block loot: " + itemStack.getType() + " x" + itemStack.getAmount());
+        }
         this.progressQuests(player, itemStack, itemStack.getAmount());
     }
 

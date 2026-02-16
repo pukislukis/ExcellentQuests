@@ -106,23 +106,33 @@ public class TaskManager extends AbstractManager<QuestsPlugin> {
     }
 
     public <O, A extends AdapterFamily<O>> void progressQuests(@NotNull Player player, @NotNull TaskType<O, A> taskType, @NotNull O entity, int amount) {
-        this.plugin.info("[BlockLoot Debug] TaskManager.progressQuests called for player " + player.getName() + ", taskType: " + taskType.getId() + ", amount: " + amount);
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] TaskManager.progressQuests called for player " + player.getName() + ", taskType: " + taskType.getId() + ", amount: " + amount);
+        }
         
         Adapter<?, O> adapter = taskType.getAdapterFamily().getAdapterFor(entity);
         if (adapter == null) {
-            this.plugin.info("[BlockLoot Debug] No adapter found for entity type");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] No adapter found for entity type");
+            }
             return;
         }
         
-        this.plugin.info("[BlockLoot Debug] Adapter found: " + adapter.getName());
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] Adapter found: " + adapter.getName());
+        }
 
         String fullName = adapter.toFullNameOfEntity(entity);
         if (fullName == null) {
-            this.plugin.info("[BlockLoot Debug] Adapter returned null fullName for entity");
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] Adapter returned null fullName for entity");
+            }
             return;
         }
         
-        this.plugin.info("[BlockLoot Debug] Full name resolved: " + fullName);
+        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            this.plugin.info("[BlockLoot Debug] Full name resolved: " + fullName);
+        }
 
         this.plugin.milestoneManager().ifPresent(milestoneManager -> milestoneManager.progressMilestones(player, taskType, fullName, amount));
         this.plugin.questManager().ifPresent(questManager -> questManager.progressQuests(player, taskType, fullName, amount));
