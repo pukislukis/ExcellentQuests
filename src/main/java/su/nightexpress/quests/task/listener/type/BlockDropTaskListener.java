@@ -3,6 +3,7 @@ package su.nightexpress.quests.task.listener.type;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -43,7 +44,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         if (event.getBlockState() instanceof Container) return; // Do not handle container's drops.
 
         Block block = event.getBlock();
-        if (!Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) return;
+        // Skip anti-abuse check for crops (Ageable blocks) since they are meant to be planted and harvested by players
+        boolean isCrop = block.getBlockData() instanceof Ageable;
+        if (!isCrop && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) return;
 
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
