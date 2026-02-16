@@ -29,6 +29,7 @@ import java.util.UUID;
 
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
 
+    private static final String PROCESSED_MARKER = "processed";
     private final NamespacedKey blockLootPlayerKey;
 
     public BlockDropTaskListener(@NotNull QuestsPlugin plugin, @NotNull TaskManager manager, @NotNull TaskType<ItemStack, AdapterFamily<ItemStack>> taskType) {
@@ -113,7 +114,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             this.progressQuests(player, itemStack, itemStack.getAmount());
             
             // Mark item as processed so pickup event doesn't double-count
-            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, "processed");
+            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, PROCESSED_MARKER);
         });
     }
 
@@ -131,7 +132,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         
         // Check if this item was already processed in BlockDropItemEvent
         String processed = itemEntity.getPersistentDataContainer().get(this.blockLootPlayerKey, PersistentDataType.STRING);
-        if ("processed".equals(processed)) {
+        if (PROCESSED_MARKER.equals(processed)) {
             // Item was already counted in BlockDropItemEvent, skip
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                 this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Item already processed in BlockDropItemEvent");
@@ -139,20 +140,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             return;
         }
         
-        ItemStack itemStack = itemEntity.getItemStack();
-        if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Invalid item stack");
-            }
-            return;
-        }
-        
-        // This is a fallback for items that weren't processed in BlockDropItemEvent
-        // (e.g., items dropped before plugin loaded, or from other sources)
-        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Processing untracked item pickup: " + itemStack.getType() + " x" + itemStack.getAmount());
-        }
-        // Don't progress for untracked items - we only want to count items from block breaks
+        // Items without the processed marker are not from block breaks tracked by this plugin
+        // (e.g., items dropped by players, mob drops, or from other sources)
+        // We don't count these for block_loot progression
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
