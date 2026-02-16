@@ -92,7 +92,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + event.getBlockState().getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
         }
         
-        // For Ageable blocks, only count if they're fully grown to prevent spam farming exploit
+        // For Ageable blocks (crops, bamboo, etc.), only count if they're fully grown to prevent spam farming exploit
         if (isAgeable) {
             Ageable ageable = (Ageable) event.getBlockState().getBlockData();
             int age = ageable.getAge();
@@ -102,7 +102,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
                 this.plugin.info("[BlockLoot Debug] Ageable block age: " + age + "/" + maxAge);
             }
             
-            // Only count fully grown crops to prevent place-break spam abuse
+            // Only count fully grown Ageable blocks to prevent place-break spam abuse
             if (age < maxAge) {
                 if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                     this.plugin.info("[BlockLoot Debug] Skipping non-fully-grown Ageable block (anti-abuse)");
