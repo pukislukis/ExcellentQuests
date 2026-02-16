@@ -29,7 +29,7 @@ import java.util.UUID;
 
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
 
-    private static final String PROCESSED_MARKER = "processed";
+    private static final String PROCESSED_MARKER = "excellent_quests_processed";
     private final NamespacedKey blockLootPlayerKey;
 
     public BlockDropTaskListener(@NotNull QuestsPlugin plugin, @NotNull TaskManager manager, @NotNull TaskType<ItemStack, AdapterFamily<ItemStack>> taskType) {
