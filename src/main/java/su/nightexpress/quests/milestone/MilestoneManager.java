@@ -153,27 +153,54 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
     }
 
     public <O, A extends AdapterFamily<O>> void progressMilestones(@NotNull Player player, @NotNull TaskType<O, A> taskType, @NotNull String fullName, int amount) {
+        this.plugin.info("[BlockLoot Debug] MilestoneManager.progressMilestones called for player " + player.getName() + ", taskType: " + taskType.getId() + ", fullName: " + fullName + ", amount: " + amount);
+        
         QuestUser user = this.plugin.getUserManager().getOrFetch(player);
 
         // TODO Get milestones by mission type
         AtomicBoolean progressed = new AtomicBoolean(false);
+        
+        int milestonesChecked = 0;
+        int milestonesMatched = 0;
 
         this.getMilestones().forEach(milestone -> {
-            if (milestone.getType() != taskType) return;
-            if (user.isCompleted(milestone)) return;
+            milestonesChecked++;
+            
+            if (milestone.getType() != taskType) {
+                this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: type mismatch (milestone type: " + milestone.getType().getId() + ", expected: " + taskType.getId() + ")");
+                return;
+            }
+            if (user.isCompleted(milestone)) {
+                this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: already completed");
+                return;
+            }
+
+            milestonesMatched++;
+            this.plugin.info("[BlockLoot Debug] Checking milestone " + milestone.getId() + " for progression");
 
             MilestoneData data = user.getMilestoneData(milestone);
 
             int level = data.getFirstIncompletedLevel(milestone);
-            if (level <= 0) return;
+            if (level <= 0) {
+                this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: no incomplete levels");
+                return;
+            }
 
             int required = milestone.getObjectiveRequirement(fullName, level);
-            if (required <= 0) return;
+            if (required <= 0) {
+                this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: no requirement for fullName " + fullName + " at level " + level);
+                return;
+            }
 
             int progress = data.getObjectiveProgress(fullName);
-            if (progress >= required && level >= milestone.getLevels()) return;
+            if (progress >= required && level >= milestone.getLevels()) {
+                this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: progress already complete (progress: " + progress + ", required: " + required + ", level: " + level + "/" + milestone.getLevels() + ")");
+                return;
+            }
 
             int total = Math.min(required, progress + amount);
+            
+            this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " progressed: " + progress + " -> " + total + " (required: " + required + ", level: " + level + ")");
 
             data.setObjectiveProgress(fullName, total);
             progressed.set(true);
@@ -193,6 +220,8 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
                 );
             }
         });
+
+        this.plugin.info("[BlockLoot Debug] Milestone check complete: " + milestonesChecked + " total milestones, " + milestonesMatched + " matched type, progressed: " + progressed.get());
 
         if (progressed.get()) {
             this.plugin.getUserManager().save(user);

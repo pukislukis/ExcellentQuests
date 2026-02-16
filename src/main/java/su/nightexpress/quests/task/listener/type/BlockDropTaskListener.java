@@ -30,11 +30,20 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTaskBlockHarvest(PlayerHarvestBlockEvent event) {
         Player player = event.getPlayer();
-        if (!this.manager.canDoTasks(player)) return;
+        if (!this.manager.canDoTasks(player)) {
+            this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent: Player " + player.getName() + " cannot do tasks");
+            return;
+        }
 
+        this.plugin.info("[BlockLoot Debug] PlayerHarvestBlockEvent triggered for player " + player.getName() + ", items harvested: " + event.getItemsHarvested().size());
+        
         event.getItemsHarvested().forEach(itemStack -> {
-            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
+            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                return;
+            }
             
+            this.plugin.info("[BlockLoot Debug] Processing harvested item: " + itemStack.getType() + " x" + itemStack.getAmount());
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
     }
@@ -42,18 +51,33 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onTaskBlockDrop(BlockDropItemEvent event) {
         Player player = event.getPlayer();
-        if (!this.manager.canDoTasks(player)) return;
-        if (event.getBlockState() instanceof Container) return; // Do not handle container's drops.
+        if (!this.manager.canDoTasks(player)) {
+            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Player " + player.getName() + " cannot do tasks");
+            return;
+        }
+        if (event.getBlockState() instanceof Container) {
+            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent: Skipping container block");
+            return; // Do not handle container's drops.
+        }
 
         Block block = event.getBlock();
         // Skip anti-abuse check for Ageable blocks (crops, etc.) since they are meant to be planted and harvested by players
         boolean isAgeable = block.getBlockData() instanceof Ageable;
-        if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) return;
+        this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + block.getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
+        
+        if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) {
+            this.plugin.info("[BlockLoot Debug] Skipping player-placed block (anti-abuse enabled)");
+            return;
+        }
 
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
-            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
+            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                return;
+            }
             
+            this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount());
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
     }
