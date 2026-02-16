@@ -25,6 +25,7 @@ import su.nightexpress.quests.task.TaskManager;
 import su.nightexpress.quests.task.TaskType;
 import su.nightexpress.quests.task.listener.TaskListener;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
@@ -99,24 +100,65 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
 
         // Process dropped items immediately for quest progression
         UUID playerUUID = player.getUniqueId();
-        event.getItems().forEach(item -> {
-            ItemStack itemStack = item.getItemStack();
-            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                    this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
-                }
-                return;
-            }
-            
-            // Progress quests immediately for the dropped items
+        
+        // For Ageable blocks (crops), if no items in the event, calculate what should have dropped
+        if (isAgeable && event.getItems().isEmpty()) {
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+                this.plugin.info("[BlockLoot Debug] Ageable block with no items in event, calculating expected drops");
             }
-            this.progressQuests(player, itemStack, itemStack.getAmount());
             
-            // Mark item as processed so pickup event doesn't double-count
-            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, BLOCK_LOOT_PROCESSED_KEY);
-        });
+            // Get the drops that would have been produced
+            // Check both hands to find the tool used (prefer main hand if both have items)
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            ItemStack offHand = player.getInventory().getItemInOffHand();
+            
+            // Select the tool to use for drop calculation (default to air if both hands are empty)
+            ItemStack tool;
+            if (mainHand != null && !mainHand.getType().isAir()) {
+                tool = mainHand;
+            } else if (offHand != null && !offHand.getType().isAir()) {
+                tool = offHand;
+            } else {
+                tool = new ItemStack(Material.AIR);
+            }
+            
+            // Use the original block state (before breaking) to get accurate drops
+            // This method accounts for fortune, silk touch, and other enchantments
+            Collection<ItemStack> drops = event.getBlockState().getDrops(tool);
+            drops.forEach(itemStack -> {
+                if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                    if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                        this.plugin.info("[BlockLoot Debug] Skipping invalid calculated drop (null, air, or zero amount)");
+                    }
+                    return;
+                }
+                
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Processing calculated drop: " + itemStack.getType() + " x" + itemStack.getAmount());
+                }
+                this.progressQuests(player, itemStack, itemStack.getAmount());
+            });
+        } else {
+            // Normal processing for items in the event
+            event.getItems().forEach(item -> {
+                ItemStack itemStack = item.getItemStack();
+                if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                    if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                        this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                    }
+                    return;
+                }
+                
+                // Progress quests immediately for the dropped items
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+                }
+                this.progressQuests(player, itemStack, itemStack.getAmount());
+                
+                // Mark item as processed so pickup event doesn't double-count
+                item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, BLOCK_LOOT_PROCESSED_KEY);
+            });
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
