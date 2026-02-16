@@ -101,6 +101,9 @@ public class QuestsCommands {
                 manager.rerollQuests(player);
             }
             else {
+                // Cancel all active quests for offline player
+                user.getQuestDatas().forEach(questData -> questData.setActive(false));
+                // Trigger quest regeneration by invalidating the timestamp
                 user.setNewQuestsDate(0L);
                 plugin.getUserManager().save(user);
             }

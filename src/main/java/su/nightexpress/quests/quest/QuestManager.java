@@ -132,13 +132,9 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
         QuestUser user = this.plugin.getUserManager().getOrFetch(player);
         
         // Cancel all active quests by setting them to inactive
-        user.getQuestDatas().forEach(questData -> {
-            if (questData.isActive()) {
-                questData.setActive(false);
-            }
-        });
+        user.getQuestDatas().forEach(questData -> questData.setActive(false));
         
-        // Clear all quest data and generate new quests
+        // Trigger quest regeneration by invalidating the timestamp
         user.setNewQuestsDate(0L);
         this.updatePlayerQuests(player);
     }
