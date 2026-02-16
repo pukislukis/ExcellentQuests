@@ -33,7 +33,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         if (!this.manager.canDoTasks(player)) return;
 
         event.getItemsHarvested().forEach(itemStack -> {
-            if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getAmount() <= 0) return;
+            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
             
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
@@ -52,7 +52,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
 
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
-            if (itemStack == null || itemStack.getType() == Material.AIR || itemStack.getAmount() <= 0) return;
+            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
             
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
