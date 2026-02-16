@@ -38,6 +38,7 @@ public class Lang implements LangContainer {
     public static final TextLocale COMMAND_QUESTS_NAME         = LangEntry.builder("Command.Quests.Name").text("Quests");
     public static final TextLocale COMMAND_QUESTS_DESC         = LangEntry.builder("Command.Quests.Desc").text("View daily quests.");
     public static final TextLocale COMMAND_QUESTS_REFRESH_DESC = LangEntry.builder("Command.Quests.Refresh.Desc").text("Refresh player's quests.");
+    public static final TextLocale COMMAND_QUESTS_REROLL_DESC  = LangEntry.builder("Command.Quests.Reroll.Desc").text("Reroll player's daily quests.");
 
     public static final TextLocale COMMAND_MILESTONES_NAME       = LangEntry.builder("Command.Milestones.Name").text("Milestones");
     public static final TextLocale COMMAND_MILESTONES_DESC       = LangEntry.builder("Command.Milestones.Desc").text("View milestones.");
@@ -163,6 +164,10 @@ public class Lang implements LangContainer {
     
     public static final MessageLocale QUESTS_REFRESHED_FOR = LangEntry.builder("Quests.RefreshedFor").chatMessage(
         GRAY.wrap("Refreshed quests for " + YELLOW.wrap(PLAYER_NAME) + ".")
+    );
+
+    public static final MessageLocale QUESTS_REROLLED_FOR = LangEntry.builder("Quests.RerolledFor").chatMessage(
+        GRAY.wrap("Rerolled quests for " + YELLOW.wrap(PLAYER_NAME) + ".")
     );
 
     public static final MessageLocale QUESTS_REFRESHED = LangEntry.builder("Quests.Refreshed")

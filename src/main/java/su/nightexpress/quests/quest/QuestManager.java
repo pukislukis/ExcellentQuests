@@ -128,6 +128,20 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
         this.updatePlayerQuests(player);
     }
 
+    public void rerollQuests(@NotNull Player player) {
+        QuestUser user = this.plugin.getUserManager().getOrFetch(player);
+        this.rerollQuests(user);
+        this.updatePlayerQuests(player);
+    }
+
+    public void rerollQuests(@NotNull QuestUser user) {
+        // Cancel all active quests by setting them to inactive
+        user.getQuestDatas().forEach(questData -> questData.setActive(false));
+        
+        // Trigger quest regeneration by invalidating the timestamp
+        user.setNewQuestsDate(0L);
+    }
+
     public void updatePlayerQuests() {
         Players.getOnline().forEach(this::updatePlayerQuests);
     }
@@ -212,7 +226,10 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
             int required = questData.getRequired(fullName);
             if (required <= 0) continue;
 
-            int count = Math.min(required, amount);
+            int current = questData.getCurrent(fullName);
+            if (current >= required) continue;
+
+            int count = Math.min(required - current, amount);
 
             questData.addCompleted(fullName, count);
             progressed.set(true);

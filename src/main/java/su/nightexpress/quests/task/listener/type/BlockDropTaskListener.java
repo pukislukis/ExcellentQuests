@@ -84,14 +84,34 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         }
 
         Block block = event.getBlock();
-        // Skip anti-abuse check for Ageable blocks (crops, etc.) since they are meant to be planted and harvested by players
+        // Check if this is an Ageable block (crops, etc.)
         // Use getBlockState() to get the block data BEFORE it was broken (event.getBlock() returns AIR after breaking)
         boolean isAgeable = event.getBlockState().getBlockData() instanceof Ageable;
+        
         if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
             this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + event.getBlockState().getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
         }
         
-        if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) {
+        // For Ageable blocks (crops, bamboo, etc.), only count if they're fully grown to prevent spam farming exploit
+        if (isAgeable) {
+            Ageable ageable = (Ageable) event.getBlockState().getBlockData();
+            int age = ageable.getAge();
+            int maxAge = ageable.getMaximumAge();
+            
+            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                this.plugin.info("[BlockLoot Debug] Ageable block age: " + age + "/" + maxAge);
+            }
+            
+            // Only count fully grown Ageable blocks to prevent place-break spam abuse
+            if (age < maxAge) {
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Skipping non-fully-grown Ageable block (anti-abuse)");
+                }
+                return;
+            }
+        }
+        // Apply player-placed block check for non-Ageable blocks
+        else if (!Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) {
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                 this.plugin.info("[BlockLoot Debug] Skipping player-placed block (anti-abuse enabled)");
             }

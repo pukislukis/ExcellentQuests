@@ -19,6 +19,7 @@ public class Perms {
 
     public static final UniPermission COMMAND_QUESTS         = new UniPermission(PREFIX_COMMAND + "quests");
     public static final UniPermission COMMAND_QUESTS_REFRESH = new UniPermission(PREFIX_COMMAND + "quests.refresh");
+    public static final UniPermission COMMAND_QUESTS_REROLL  = new UniPermission(PREFIX_COMMAND + "quests.reroll");
 
     public static final UniPermission COMMAND_MILESTONES       = new UniPermission(PREFIX_COMMAND + "milestones");
     public static final UniPermission COMMAND_MILESTONES_RESET = new UniPermission(PREFIX_COMMAND + "milestones.reset");
@@ -48,6 +49,7 @@ public class Perms {
             COMMAND_RELOAD,
             COMMAND_QUESTS,
             COMMAND_QUESTS_REFRESH,
+            COMMAND_QUESTS_REROLL,
 
             COMMAND_MILESTONES,
             COMMAND_MILESTONES_RESET,
