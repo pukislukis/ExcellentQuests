@@ -153,7 +153,8 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
     }
 
     public <O, A extends AdapterFamily<O>> void progressMilestones(@NotNull Player player, @NotNull TaskType<O, A> taskType, @NotNull String fullName, int amount) {
-        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+        boolean debug = Config.GENERAL_DEBUG_BLOCK_LOOT.get();
+        if (debug) {
             this.plugin.info("[BlockLoot Debug] MilestoneManager.progressMilestones called for player " + player.getName() + ", taskType: " + taskType.getId() + ", fullName: " + fullName + ", amount: " + amount);
         }
         
@@ -162,27 +163,26 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
         // TODO Get milestones by mission type
         AtomicBoolean progressed = new AtomicBoolean(false);
         
-        int milestonesChecked = 0;
-        int milestonesMatched = 0;
+        final int[] counters = debug ? new int[]{0, 0} : null; // [milestonesChecked, milestonesMatched]
 
         this.getMilestones().forEach(milestone -> {
-            milestonesChecked++;
+            if (debug) counters[0]++;
             
             if (milestone.getType() != taskType) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                if (debug) {
                     this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: type mismatch (milestone type: " + milestone.getType().getId() + ", expected: " + taskType.getId() + ")");
                 }
                 return;
             }
             if (user.isCompleted(milestone)) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                if (debug) {
                     this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: already completed");
                 }
                 return;
             }
 
-            milestonesMatched++;
-            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            if (debug) {
+                counters[1]++;
                 this.plugin.info("[BlockLoot Debug] Checking milestone " + milestone.getId() + " for progression");
             }
 
@@ -190,7 +190,7 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
 
             int level = data.getFirstIncompletedLevel(milestone);
             if (level <= 0) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                if (debug) {
                     this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: no incomplete levels");
                 }
                 return;
@@ -198,7 +198,7 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
 
             int required = milestone.getObjectiveRequirement(fullName, level);
             if (required <= 0) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                if (debug) {
                     this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: no requirement for fullName " + fullName + " at level " + level);
                 }
                 return;
@@ -206,7 +206,7 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
 
             int progress = data.getObjectiveProgress(fullName);
             if (progress >= required && level >= milestone.getLevels()) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                if (debug) {
                     this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " skipped: progress already complete (progress: " + progress + ", required: " + required + ", level: " + level + "/" + milestone.getLevels() + ")");
                 }
                 return;
@@ -214,7 +214,7 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
 
             int total = Math.min(required, progress + amount);
             
-            if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+            if (debug) {
                 this.plugin.info("[BlockLoot Debug] Milestone " + milestone.getId() + " progressed: " + progress + " -> " + total + " (required: " + required + ", level: " + level + ")");
             }
 
@@ -237,8 +237,8 @@ public class MilestoneManager extends AbstractManager<QuestsPlugin> {
             }
         });
 
-        if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-            this.plugin.info("[BlockLoot Debug] Milestone check complete: " + milestonesChecked + " total milestones, " + milestonesMatched + " matched type, progressed: " + progressed.get());
+        if (debug && counters != null) {
+            this.plugin.info("[BlockLoot Debug] Milestone check complete: " + counters[0] + " total milestones, " + counters[1] + " matched type, progressed: " + progressed.get());
         }
 
         if (progressed.get()) {

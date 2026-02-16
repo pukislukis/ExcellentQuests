@@ -30,12 +30,10 @@ import java.util.UUID;
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
 
     private final NamespacedKey blockLootPlayerKey;
-    private final NamespacedKey blockLootItemKey;
 
     public BlockDropTaskListener(@NotNull QuestsPlugin plugin, @NotNull TaskManager manager, @NotNull TaskType<ItemStack, AdapterFamily<ItemStack>> taskType) {
         super(plugin, manager, taskType);
         this.blockLootPlayerKey = new NamespacedKey(plugin, "block_loot_player");
-        this.blockLootItemKey = new NamespacedKey(plugin, "block_loot_item");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -110,8 +108,6 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             
             // Mark the Item entity with the player's UUID who broke the block
             item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, playerUUID.toString());
-            // Store the item type as well for tracking
-            item.getPersistentDataContainer().set(this.blockLootItemKey, PersistentDataType.STRING, itemStack.getType().name());
             
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                 this.plugin.info("[BlockLoot Debug] Marked dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
@@ -139,7 +135,15 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         }
         
         // Check if the player picking up is the one who broke the block
-        if (!player.getUniqueId().toString().equals(markedPlayerUUID)) {
+        UUID markedUUID;
+        try {
+            markedUUID = UUID.fromString(markedPlayerUUID);
+        } catch (IllegalArgumentException e) {
+            // Invalid UUID stored, ignore
+            return;
+        }
+        
+        if (!player.getUniqueId().equals(markedUUID)) {
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                 this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up item but didn't break the block");
             }
