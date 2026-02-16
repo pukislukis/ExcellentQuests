@@ -84,9 +84,10 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
 
         Block block = event.getBlock();
         // Skip anti-abuse check for Ageable blocks (crops, etc.) since they are meant to be planted and harvested by players
-        boolean isAgeable = block.getBlockData() instanceof Ageable;
+        // Use getBlockState() to get the block data BEFORE it was broken (event.getBlock() returns AIR after breaking)
+        boolean isAgeable = event.getBlockState().getBlockData() instanceof Ageable;
         if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + block.getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
+            this.plugin.info("[BlockLoot Debug] BlockDropItemEvent triggered for player " + player.getName() + ", block: " + event.getBlockState().getType() + ", isAgeable: " + isAgeable + ", items: " + event.getItems().size());
         }
         
         if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) {
