@@ -1,18 +1,22 @@
 package su.nightexpress.quests.task.listener.type;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Container;
 import org.bukkit.block.data.Ageable;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import su.nightexpress.quests.QuestsPlugin;
 import su.nightexpress.quests.config.Config;
@@ -21,10 +25,17 @@ import su.nightexpress.quests.task.TaskManager;
 import su.nightexpress.quests.task.TaskType;
 import su.nightexpress.quests.task.listener.TaskListener;
 
+import java.util.UUID;
+
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
+
+    private final NamespacedKey blockLootPlayerKey;
+    private final NamespacedKey blockLootItemKey;
 
     public BlockDropTaskListener(@NotNull QuestsPlugin plugin, @NotNull TaskManager manager, @NotNull TaskType<ItemStack, AdapterFamily<ItemStack>> taskType) {
         super(plugin, manager, taskType);
+        this.blockLootPlayerKey = new NamespacedKey(plugin, "block_loot_player");
+        this.blockLootItemKey = new NamespacedKey(plugin, "block_loot_item");
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -70,6 +81,8 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             return;
         }
 
+        // Mark dropped items with player UUID so we can track them when picked up
+        UUID playerUUID = player.getUniqueId();
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
             if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
@@ -77,9 +90,46 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
                 return;
             }
             
-            this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount());
-            this.progressQuests(player, itemStack, itemStack.getAmount());
+            // Mark the Item entity with the player's UUID who broke the block
+            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, playerUUID.toString());
+            // Store the item type as well for tracking
+            item.getPersistentDataContainer().set(this.blockLootItemKey, PersistentDataType.STRING, itemStack.getType().name());
+            
+            this.plugin.info("[BlockLoot Debug] Marked dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onTaskItemPickup(EntityPickupItemEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!this.manager.canDoTasks(player)) {
+            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " cannot do tasks");
+            return;
+        }
+
+        Item itemEntity = event.getItem();
+        
+        // Check if this item was marked as block loot
+        String markedPlayerUUID = itemEntity.getPersistentDataContainer().get(this.blockLootPlayerKey, PersistentDataType.STRING);
+        if (markedPlayerUUID == null) {
+            // Item was not from block loot, ignore
+            return;
+        }
+        
+        // Check if the player picking up is the one who broke the block
+        if (!player.getUniqueId().toString().equals(markedPlayerUUID)) {
+            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up item but didn't break the block");
+            return;
+        }
+        
+        ItemStack itemStack = itemEntity.getItemStack();
+        if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Invalid item stack");
+            return;
+        }
+        
+        this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up block loot: " + itemStack.getType() + " x" + itemStack.getAmount());
+        this.progressQuests(player, itemStack, itemStack.getAmount());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
