@@ -226,7 +226,10 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
             int required = questData.getRequired(fullName);
             if (required <= 0) continue;
 
-            int count = Math.min(required, amount);
+            int current = questData.getCurrent(fullName);
+            if (current >= required) continue;
+
+            int count = Math.min(required - current, amount);
 
             questData.addCompleted(fullName, count);
             progressed.set(true);
