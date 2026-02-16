@@ -108,13 +108,14 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             }
             
             // Get the drops that would have been produced
-            // Use the tool the player was holding when breaking the block
-            // Note: We use main hand as crops are typically broken with main hand,
-            // and the exact hand doesn't affect drop calculation for crops
-            ItemStack tool = player.getInventory().getItemInMainHand();
+            // Check both hands to find the tool used (prefer main hand if both have items)
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            ItemStack offHand = player.getInventory().getItemInOffHand();
+            ItemStack tool = (mainHand != null && !mainHand.getType().isAir()) ? mainHand : offHand;
+            
             // Use the original block state (before breaking) to get accurate drops
             // This method accounts for fortune, silk touch, and other enchantments
-            var drops = event.getBlockState().getDrops(tool);
+            Collection<ItemStack> drops = event.getBlockState().getDrops(tool);
             drops.forEach(itemStack -> {
                 if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
                     if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
