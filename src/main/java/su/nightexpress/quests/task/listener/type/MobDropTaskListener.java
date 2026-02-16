@@ -30,6 +30,8 @@ public class MobDropTaskListener extends TaskListener<ItemStack, AdapterFamily<I
         if (this.manager.isSpawnerMob(entity)) return;
 
         event.getDrops().forEach(itemStack -> {
+            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
+            
             this.progressQuests(player, itemStack, itemStack.getAmount());
         });
     }

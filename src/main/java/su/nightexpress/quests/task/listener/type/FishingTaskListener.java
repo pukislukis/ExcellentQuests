@@ -35,6 +35,8 @@ public class FishingTaskListener extends TaskListener<ItemStack, AdapterFamily<I
         if (!(entity instanceof Item item)) return;
 
         ItemStack itemStack = item.getItemStack();
+        if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) return;
+        
         int amount = itemStack.getAmount();
 
         this.progressQuests(player, itemStack, amount);
