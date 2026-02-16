@@ -99,24 +99,51 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
 
         // Process dropped items immediately for quest progression
         UUID playerUUID = player.getUniqueId();
-        event.getItems().forEach(item -> {
-            ItemStack itemStack = item.getItemStack();
-            if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
-                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                    this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
-                }
-                return;
-            }
-            
-            // Progress quests immediately for the dropped items
+        
+        // For Ageable blocks (crops), if no items in the event, calculate what should have dropped
+        if (isAgeable && event.getItems().isEmpty()) {
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+                this.plugin.info("[BlockLoot Debug] Ageable block with no items in event, calculating expected drops");
             }
-            this.progressQuests(player, itemStack, itemStack.getAmount());
             
-            // Mark item as processed so pickup event doesn't double-count
-            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, BLOCK_LOOT_PROCESSED_KEY);
-        });
+            // Get the drops that would have been produced
+            // Use the tool the player was holding when breaking the block
+            ItemStack tool = player.getInventory().getItemInMainHand();
+            // Use the original block state (before breaking) to get accurate drops
+            event.getBlockState().getDrops(tool).forEach(itemStack -> {
+                if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                    if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                        this.plugin.info("[BlockLoot Debug] Skipping invalid calculated drop (null, air, or zero amount)");
+                    }
+                    return;
+                }
+                
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Processing calculated drop: " + itemStack.getType() + " x" + itemStack.getAmount());
+                }
+                this.progressQuests(player, itemStack, itemStack.getAmount());
+            });
+        } else {
+            // Normal processing for items in the event
+            event.getItems().forEach(item -> {
+                ItemStack itemStack = item.getItemStack();
+                if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
+                    if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                        this.plugin.info("[BlockLoot Debug] Skipping invalid item (null, air, or zero amount)");
+                    }
+                    return;
+                }
+                
+                // Progress quests immediately for the dropped items
+                if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
+                    this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+                }
+                this.progressQuests(player, itemStack, itemStack.getAmount());
+                
+                // Mark item as processed so pickup event doesn't double-count
+                item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, BLOCK_LOOT_PROCESSED_KEY);
+            });
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
