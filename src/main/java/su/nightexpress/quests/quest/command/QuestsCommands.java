@@ -38,6 +38,12 @@ public class QuestsCommands {
                 .withArguments(Arguments.playerName(ARG_PLAYER))
                 .executes(QuestsCommands::refreshQuests)
             )
+            .branch(Commands.literal("reroll")
+                .permission(Perms.COMMAND_QUESTS_REROLL)
+                .description(Lang.COMMAND_QUESTS_REROLL_DESC)
+                .withArguments(Arguments.playerName(ARG_PLAYER))
+                .executes(QuestsCommands::rerollQuests)
+            )
             .executes(QuestsCommands::openQuests)
         );
         command.register();
@@ -78,6 +84,27 @@ public class QuestsCommands {
                 plugin.getUserManager().save(user);
             }
             context.send(Lang.QUESTS_REFRESHED_FOR, replacer -> replacer.replace(QuestsPlaceholders.PLAYER_NAME, user.getName()));
+        });
+        return true;
+    }
+
+    private static boolean rerollQuests(@NotNull CommandContext context, @NotNull ParsedArguments arguments) {
+        String playerName = arguments.getString(ARG_PLAYER);
+        plugin.getUserManager().manageUser(playerName, user -> {
+            if (user == null) {
+                context.errorBadPlayer();
+                return;
+            }
+
+            Player player = user.getPlayer();
+            if (player != null) {
+                manager.rerollQuests(player);
+            }
+            else {
+                user.setNewQuestsDate(0L);
+                plugin.getUserManager().save(user);
+            }
+            context.send(Lang.QUESTS_REROLLED_FOR, replacer -> replacer.replace(QuestsPlaceholders.PLAYER_NAME, user.getName()));
         });
         return true;
     }
