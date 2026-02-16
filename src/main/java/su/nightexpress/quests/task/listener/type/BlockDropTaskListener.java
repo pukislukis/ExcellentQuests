@@ -65,7 +65,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         });
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTaskBlockDrop(BlockDropItemEvent event) {
         Player player = event.getPlayer();
         if (!this.manager.canDoTasks(player)) {
@@ -95,7 +95,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             return;
         }
 
-        // Mark dropped items with player UUID so we can track them when picked up
+        // Process dropped items immediately for quest progression
         UUID playerUUID = player.getUniqueId();
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
@@ -106,12 +106,14 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
                 return;
             }
             
-            // Mark the Item entity with the player's UUID who broke the block
-            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, playerUUID.toString());
-            
+            // Progress quests immediately for the dropped items
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                this.plugin.info("[BlockLoot Debug] Marked dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
+                this.plugin.info("[BlockLoot Debug] Processing dropped item: " + itemStack.getType() + " x" + itemStack.getAmount() + " from player " + player.getName());
             }
+            this.progressQuests(player, itemStack, itemStack.getAmount());
+            
+            // Mark item as processed so pickup event doesn't double-count
+            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, "processed");
         });
     }
 
@@ -127,25 +129,12 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
 
         Item itemEntity = event.getItem();
         
-        // Check if this item was marked as block loot
-        String markedPlayerUUID = itemEntity.getPersistentDataContainer().get(this.blockLootPlayerKey, PersistentDataType.STRING);
-        if (markedPlayerUUID == null) {
-            // Item was not from block loot, ignore
-            return;
-        }
-        
-        // Check if the player picking up is the one who broke the block
-        UUID markedUUID;
-        try {
-            markedUUID = UUID.fromString(markedPlayerUUID);
-        } catch (IllegalArgumentException e) {
-            // Invalid UUID stored, ignore
-            return;
-        }
-        
-        if (!player.getUniqueId().equals(markedUUID)) {
+        // Check if this item was already processed in BlockDropItemEvent
+        String processed = itemEntity.getPersistentDataContainer().get(this.blockLootPlayerKey, PersistentDataType.STRING);
+        if ("processed".equals(processed)) {
+            // Item was already counted in BlockDropItemEvent, skip
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up item but didn't break the block");
+                this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Item already processed in BlockDropItemEvent");
             }
             return;
         }
@@ -158,10 +147,12 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             return;
         }
         
+        // This is a fallback for items that weren't processed in BlockDropItemEvent
+        // (e.g., items dropped before plugin loaded, or from other sources)
         if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
-            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Player " + player.getName() + " picked up block loot: " + itemStack.getType() + " x" + itemStack.getAmount());
+            this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Processing untracked item pickup: " + itemStack.getType() + " x" + itemStack.getAmount());
         }
-        this.progressQuests(player, itemStack, itemStack.getAmount());
+        // Don't progress for untracked items - we only want to count items from block breaks
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
