@@ -130,13 +130,16 @@ public class QuestManager extends AbstractManager<QuestsPlugin> {
 
     public void rerollQuests(@NotNull Player player) {
         QuestUser user = this.plugin.getUserManager().getOrFetch(player);
-        
+        this.rerollQuests(user);
+        this.updatePlayerQuests(player);
+    }
+
+    public void rerollQuests(@NotNull QuestUser user) {
         // Cancel all active quests by setting them to inactive
         user.getQuestDatas().forEach(questData -> questData.setActive(false));
         
         // Trigger quest regeneration by invalidating the timestamp
         user.setNewQuestsDate(0L);
-        this.updatePlayerQuests(player);
     }
 
     public void updatePlayerQuests() {

@@ -65,15 +65,17 @@ Default alias: `/quests`
 ## Differences Between Refresh and Reroll
 
 ### `/quests refresh <player>`
-- Simply resets the quest timer and generates new quests
-- Designed for general quest refresh functionality
+- Resets the quest timer to trigger new quest generation
 - Does not explicitly cancel active quests
+- Simply invalidates the quest timestamp
+- New quests are generated when the player's quests are updated
 
 ### `/quests reroll <player>`
-- **Cancels all active quests** by setting them to inactive
-- Ensures accepted quests are properly terminated
-- Then clears all quest data and generates new quests
-- Best used when you want to give players a fresh start
+- **Explicitly cancels all active quests** by setting them to inactive
+- Ensures that any quests the player has accepted are properly terminated
+- Then invalidates the quest timestamp to trigger regeneration
+- Generates new random quests
+- Best used when you want to give players a fresh start with all previous quest progress removed
 
 ---
 

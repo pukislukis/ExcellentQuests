@@ -96,15 +96,13 @@ public class QuestsCommands {
                 return;
             }
 
+            manager.rerollQuests(user);
+            
             Player player = user.getPlayer();
             if (player != null) {
-                manager.rerollQuests(player);
+                manager.updatePlayerQuests(player);
             }
             else {
-                // Cancel all active quests for offline player
-                user.getQuestDatas().forEach(questData -> questData.setActive(false));
-                // Trigger quest regeneration by invalidating the timestamp
-                user.setNewQuestsDate(0L);
                 plugin.getUserManager().save(user);
             }
             context.send(Lang.QUESTS_REROLLED_FOR, replacer -> replacer.replace(QuestsPlaceholders.PLAYER_NAME, user.getName()));
