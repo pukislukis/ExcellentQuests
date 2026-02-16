@@ -44,9 +44,9 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         if (event.getBlockState() instanceof Container) return; // Do not handle container's drops.
 
         Block block = event.getBlock();
-        // Skip anti-abuse check for crops (Ageable blocks) since they are meant to be planted and harvested by players
-        boolean isCrop = block.getBlockData() instanceof Ageable;
-        if (!isCrop && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) return;
+        // Skip anti-abuse check for Ageable blocks (crops, etc.) since they are meant to be planted and harvested by players
+        boolean isAgeable = block.getBlockData() instanceof Ageable;
+        if (!isAgeable && !Config.ANTI_ABUSE_COUNT_PLAYER_BLOCKS.get() && this.manager.isPlayerBlock(block)) return;
 
         event.getItems().forEach(item -> {
             ItemStack itemStack = item.getItemStack();
