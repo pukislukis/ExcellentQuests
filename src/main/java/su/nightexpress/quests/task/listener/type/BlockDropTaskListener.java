@@ -29,7 +29,7 @@ import java.util.UUID;
 
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
 
-    private static final String PROCESSED_MARKER = "excellent_quests_processed";
+    private static final String BLOCK_LOOT_PROCESSED_KEY = "excellent_quests_processed";
     private final NamespacedKey blockLootPlayerKey;
 
     public BlockDropTaskListener(@NotNull QuestsPlugin plugin, @NotNull TaskManager manager, @NotNull TaskType<ItemStack, AdapterFamily<ItemStack>> taskType) {
@@ -114,7 +114,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             this.progressQuests(player, itemStack, itemStack.getAmount());
             
             // Mark item as processed so pickup event doesn't double-count
-            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, PROCESSED_MARKER);
+            item.getPersistentDataContainer().set(this.blockLootPlayerKey, PersistentDataType.STRING, BLOCK_LOOT_PROCESSED_KEY);
         });
     }
 
@@ -132,7 +132,7 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
         
         // Check if this item was already processed in BlockDropItemEvent
         String processed = itemEntity.getPersistentDataContainer().get(this.blockLootPlayerKey, PersistentDataType.STRING);
-        if (PROCESSED_MARKER.equals(processed)) {
+        if (BLOCK_LOOT_PROCESSED_KEY.equals(processed)) {
             // Item was already counted in BlockDropItemEvent, skip
             if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                 this.plugin.info("[BlockLoot Debug] EntityPickupItemEvent: Item already processed in BlockDropItemEvent");
