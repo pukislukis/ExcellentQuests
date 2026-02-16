@@ -25,6 +25,7 @@ import su.nightexpress.quests.task.TaskManager;
 import su.nightexpress.quests.task.TaskType;
 import su.nightexpress.quests.task.listener.TaskListener;
 
+import java.util.Collection;
 import java.util.UUID;
 
 public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily<ItemStack>> {
@@ -108,9 +109,13 @@ public class BlockDropTaskListener extends TaskListener<ItemStack, AdapterFamily
             
             // Get the drops that would have been produced
             // Use the tool the player was holding when breaking the block
+            // Note: We use main hand as crops are typically broken with main hand,
+            // and the exact hand doesn't affect drop calculation for crops
             ItemStack tool = player.getInventory().getItemInMainHand();
             // Use the original block state (before breaking) to get accurate drops
-            event.getBlockState().getDrops(tool).forEach(itemStack -> {
+            // This method accounts for fortune, silk touch, and other enchantments
+            var drops = event.getBlockState().getDrops(tool);
+            drops.forEach(itemStack -> {
                 if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
                     if (Config.GENERAL_DEBUG_BLOCK_LOOT.get()) {
                         this.plugin.info("[BlockLoot Debug] Skipping invalid calculated drop (null, air, or zero amount)");
